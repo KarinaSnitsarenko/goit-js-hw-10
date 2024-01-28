@@ -7,15 +7,15 @@ form.addEventListener('submit', event => {
   event.preventDefault();
 
   const formData = new FormData(form);
-  const delay = formData.get('delay');
+  const delay = parseInt(formData.get('delay'));
   const isFulfilled = formData.get('state') === 'fulfilled';
 
   new Promise((resolve, reject) => {
     setTimeout(() => {
       if (isFulfilled) {
-        resolve(`✅ Fulfilled promise in ${delay}ms`);
+        resolve(delay);
       } else {
-        reject(`❌ Rejected promise in ${delay}ms`);
+        reject(delay);
       }
     }, delay);
   })
@@ -23,18 +23,18 @@ form.addEventListener('submit', event => {
     .catch(errorResultMessage);
 });
 
-function successResultMessage(message) {
+function successResultMessage(delay) {
   iziToast.show({
-    message,
+    message: `✅ Fulfilled promise in ${delay}ms`,
     backgroundColor: '#59A10D',
     messageColor: '#fff',
     position: 'topRight',
   });
 }
 
-function errorResultMessage(message) {
+function errorResultMessage(delay) {
   iziToast.show({
-    message,
+    message: `❌ Rejected promise in ${delay}ms`,
     backgroundColor: '#EF4040',
     messageColor: '#fff',
     position: 'topRight',

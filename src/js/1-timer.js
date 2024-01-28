@@ -1,3 +1,4 @@
+//
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 import iziToast from 'izitoast';
@@ -11,14 +12,14 @@ const minutesOfTimer = document.querySelector('span[data-minutes]');
 const secondsOfTimer = document.querySelector('span[data-seconds]');
 
 let userSelectedDate;
-const currentDate = new Date();
+let timerInterval;
+
 const options = {
   enableTime: true,
   time_24hr: true,
   defaultDate: new Date(),
   minuteIncrement: 1,
   onClose(selectedDates) {
-    console.log(selectedDates[0]);
     userSelectedDate = selectedDates[0];
     getUserDate(userSelectedDate);
   },
@@ -26,7 +27,12 @@ const options = {
 
 flatpickr('#datetime-picker', options);
 
+startBtn.addEventListener('click', addTimer);
+input.addEventListener('change', inputChangeHandler);
+
 function getUserDate(date) {
+  const currentDate = new Date();
+
   if (date <= currentDate) {
     startBtn.setAttribute('disabled', true);
     iziToast.error({
@@ -40,7 +46,6 @@ function getUserDate(date) {
     });
   } else {
     startBtn.removeAttribute('disabled');
-    startBtn.addEventListener('click', addTimer);
   }
 }
 
@@ -51,17 +56,24 @@ function addLeadingZero(value) {
 function addTimer() {
   startBtn.setAttribute('disabled', true);
   input.setAttribute('disabled', true);
-  let deltaTime = userSelectedDate.getTime() - currentDate.getTime();
-  let setIntervalId;
 
-  setIntervalId = setInterval(() => {
+  userSelectedDate = flatpickr('#datetime-picker').selectedDates[0];
+  const currentTime = new Date();
+  let deltaTime = userSelectedDate.getTime() - currentTime.getTime();
+  clearInterval(timerInterval);
+
+  timerInterval = setInterval(() => {
     deltaTime -= 1000;
+
     if (deltaTime < 0) {
-      clearInterval(setIntervalId);
+      clearInterval(timerInterval);
       updateTimer({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-      startBtn.removeEventListener('click', addTimer);
+      startBtn.removeAttribute('disabled');
+      input.removeAttribute('disabled');
+      input.addEventListener('change', inputChangeHandler);
       return;
     }
+
     updateTimer(convertMs(deltaTime));
   }, 1000);
 }
@@ -74,20 +86,19 @@ function updateTimer({ days, hours, minutes, seconds }) {
 }
 
 function convertMs(ms) {
-  // Number of milliseconds per unit of time
   const second = 1000;
   const minute = second * 60;
   const hour = minute * 60;
   const day = hour * 24;
 
-  // Remaining days
   const days = Math.floor(ms / day);
-  // Remaining hours
   const hours = Math.floor((ms % day) / hour);
-  // Remaining minutes
   const minutes = Math.floor(((ms % day) % hour) / minute);
-  // Remaining seconds
   const seconds = Math.floor((((ms % day) % hour) % minute) / second);
 
   return { days, hours, minutes, seconds };
+}
+
+function inputChangeHandler() {
+  startBtn.removeAttribute('disabled');
 }
