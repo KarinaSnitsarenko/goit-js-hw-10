@@ -11,6 +11,7 @@ const minutesOfTimer = document.querySelector('span[data-minutes]');
 const secondsOfTimer = document.querySelector('span[data-seconds]');
 
 let timerInterval;
+let userSelectedDate;
 
 const options = {
   enableTime: true,
@@ -18,7 +19,7 @@ const options = {
   defaultDate: new Date(),
   minuteIncrement: 1,
   onClose(selectedDates) {
-    const userSelectedDate = selectedDates[0];
+    userSelectedDate = selectedDates[0];
     getUserDate(userSelectedDate);
   },
 };
@@ -26,7 +27,6 @@ const options = {
 flatpickr('#datetime-picker', options);
 
 startBtn.addEventListener('click', addTimer);
-// input.addEventListener('change', inputChangeHandler);
 
 function getUserDate(date) {
   const currentDate = new Date();
@@ -57,7 +57,6 @@ function addTimer() {
 
   clearInterval(timerInterval);
 
-  const userSelectedDate = flatpickr('#datetime-picker').selectedDates[0];
   const currentTime = new Date();
   let deltaTime = userSelectedDate.getTime() - currentTime.getTime();
 
@@ -66,17 +65,17 @@ function addTimer() {
 
     if (deltaTime < 0) {
       clearInterval(timerInterval);
-      updateTimer({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      updateTimerInterface({ days: 0, hours: 0, minutes: 0, seconds: 0 });
       startBtn.removeAttribute('disabled');
       input.removeAttribute('disabled');
       return;
     }
 
-    updateTimer(convertMs(deltaTime));
+    updateTimerInterface(convertMs(deltaTime));
   }, 1000);
 }
 
-function updateTimer({ days, hours, minutes, seconds }) {
+function updateTimerInterface({ days, hours, minutes, seconds }) {
   daysOfTimer.textContent = addLeadingZero(days);
   hoursOfTimer.textContent = addLeadingZero(hours);
   minutesOfTimer.textContent = addLeadingZero(minutes);
@@ -95,8 +94,4 @@ function convertMs(ms) {
   const seconds = Math.floor((((ms % day) % hour) % minute) / second);
 
   return { days, hours, minutes, seconds };
-}
-
-function inputChangeHandler() {
-  startBtn.removeAttribute('disabled');
 }
